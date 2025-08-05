@@ -1,3 +1,5 @@
 venv/
 .venv/
 fastapi/*
+Agentic AI/venv/*
+Agentic AI/.env

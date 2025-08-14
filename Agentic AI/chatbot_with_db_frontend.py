@@ -1,5 +1,5 @@
 import streamlit as st
-from chatbot_backend import chatbot
+from chatbot_with_db_backend import chatbot, retrieve_all_threads
 from langchain_core.messages import HumanMessage
 import uuid
 
@@ -33,10 +33,22 @@ if 'thread_id' not in st.session_state:
     st.session_state['thread_id'] = generate_thread_id()
 
 if 'chat_threads' not in st.session_state:
-    st.session_state['chat_threads'] = []
+    st.session_state['chat_threads'] = retrieve_all_threads()
 
 if 'thread_labels' not in st.session_state:
     st.session_state['thread_labels'] = {}
+
+# Populate missing thread labels from DB
+for tid in st.session_state['chat_threads']:
+    if tid not in st.session_state['thread_labels']:
+        messages = load_conversation(tid)
+        if messages:
+            first_human_msg = next((m for m in messages if isinstance(m, HumanMessage)), None)
+            if first_human_msg:
+                label = first_human_msg.content[:30] + "..." if len(first_human_msg.content) > 30 else first_human_msg.content
+            else:
+                pass
+            st.session_state['thread_labels'][tid] = label
 
 add_thread(st.session_state['thread_id'])
 
